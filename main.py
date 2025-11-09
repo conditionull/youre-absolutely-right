@@ -3,6 +3,7 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from config import MODEL_NAME, SYSTEM_PROMPT
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -19,8 +20,9 @@ def main():
     ]
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
+        model=MODEL_NAME,
         contents=messages,
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
     )
 
     if "--verbose" in sys.argv:
