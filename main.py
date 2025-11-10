@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from config import MODEL_NAME, SYSTEM_PROMPT
+from functions.get_files_info import schema_get_files_info
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -19,17 +20,25 @@ def main():
         types.Content(role="user", parts=[types.Part(text=sys.argv[1])]),
     ]
 
+    available_functions = types.Tool(
+        function_declarations=[
+            schema_get_files_info,
+        ]
+    )
+
     response = client.models.generate_content(
         model=MODEL_NAME,
         contents=messages,
-        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+        config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=SYSTEM_PROMPT
+        ),
     )
 
     if "--verbose" in sys.argv:
         print(f"User prompt: {sys.argv[1]}")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-    print(response.text)
+    print(response.function_calls)
 
 
 
