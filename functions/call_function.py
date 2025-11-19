@@ -8,12 +8,22 @@ from functions.write_file import write_file
 
 def call_function(function_call_part, verbose=False):
     args = function_call_part.args or {}
+
     if verbose:
         print(f"Calling function: {function_call_part.name}({args})")
     else:
         print(f" - Calling function: {function_call_part.name}({args})")
 
-    kwargs = {**(args), "working_directory": "./calculator"}
+    # run_python_file only accepts working_directory, file_path, args.
+    # The model sometimes adds extra keys like "code", so we ignore them here.
+    if function_call_part.name == "run_python_file":
+        kwargs = {
+            "working_directory": ".",
+            "file_path": args.get("file_path", ""),
+            "args": args.get("args"),
+        }
+    else:
+        kwargs = {**args, "working_directory": "."}
 
     functions = {
         "get_file_content": get_file_content,
